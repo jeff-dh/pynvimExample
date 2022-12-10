@@ -27,7 +27,7 @@ class PynvimExample(object):
                 'height': 10,
                 }
 
-        # fetch lua config from lua/pynvimexample.lua
+        # fetch lua config from lua/pynvimExample.lua
         # with this wrapper it's possible to configure this module
         # like a "native" lua module: require('module').setup(config_table)
         cfg = self.nvim.exec_lua('return require("pynvimExample").getConfig()')
@@ -79,7 +79,7 @@ class PynvimExample(object):
         buf = self.nvim.api.create_buf(False, True)
         buf.api.set_option('bufhidden', 'wipe')
         buf[:] = stdoutBuffer.getvalue().split('\n')
-        # buf.api.set_option('modifiable', False)
+        buf.api.set_option('modifiable', False)
 
         # create a window and show the buffer
         win = self.nvim.api.open_win(buf, True, self.getOutputWinOptions())
