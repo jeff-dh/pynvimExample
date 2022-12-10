@@ -1,14 +1,16 @@
 import pynvim
 
 
-def callbackCmd(f, *args):
+def createCallbackCommand(f, args):
     """
-    This is a helper function to use callbacks more pythonic -- the way I
-    figured out it might work, don't know whether that really makes sense
-    or whether there's a better way (with pynvim?), but this works
+    This is a helper function to use python callbacks nicely -- the way I
+    figured out it works, don't know whether that really makes sense or whether
+    there's a better way (some pynvim solution I haven't foudn yet?)
     """
     args_str = ", ".join(list(map(str, args)))
+    # cut of 'function:' from _nvim_rpc_method_name
     rpc_name = f._nvim_rpc_method_name[9:]
+    # wrap it into a vim command that will be called
     return f':call {rpc_name}({args_str})'
 
 
@@ -45,12 +47,11 @@ class PynvimExample(object):
                 }
 
     def getOutputWinOptions(self):
-        height = self.config['height']
         return {'relative': 'win',
                 'width': self.nvim.current.window.width,
-                'height': height,
+                'height': self.config['height'],
                 'col': 0,
-                'row': self.nvim.current.window.height - height,
+                'row': self.nvim.current.window.height - self.config['height'],
                 }
 
     @pynvim.function('PynvimExampleClose')
@@ -62,6 +63,7 @@ class PynvimExample(object):
         for the autocmd, but for testing and demonstration purpose...
         """
         assert len(args) == 1
+        self.nvim.api.clear_autocmds({'group': 'PynvimExampleAutoCmds'})
         self.nvim.api.win_close(int(args[0]), True)
 
     @pynvim.command('PynvimExampleRun', nargs='0')
@@ -87,7 +89,7 @@ class PynvimExample(object):
         # create a callback that will be called on 'WinLeave' for the buffer
         self.nvim.api.create_augroup("PynvimExampleAutoCmds", {'clear': True})
 
-        callback_cmd = callbackCmd(self.close, win.handle)
+        callback_cmd = createCallbackCommand(self.close, [win.handle])
         self.nvim.api.create_autocmd(['WinLeave'],
                                      {'group': 'PynvimExampleAutoCmds',
                                       'buffer': buf.handle,
